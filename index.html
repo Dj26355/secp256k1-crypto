@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>secp256k1 Crypto Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0e27;
+            color: #e0e6ff;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { color: #00d4ff; margin-bottom: 20px; text-align: center; }
+        h2 { color: #00d4ff; margin-top: 30px; margin-bottom: 15px; font-size: 1.2em; }
+        .section { background: #0f1436; border: 1px solid #1a2f5a; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .full { grid-column: 1 / -1; }
+        label { display: block; margin-bottom: 5px; color: #7dd3fc; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 10px; background: #1a2f5a; border: 1px solid #0ea5e9; color: #e0e6ff; border-radius: 4px; font-family: monospace; margin-bottom: 10px; }
+        textarea { min-height: 100px; resize: vertical; }
+        button { padding: 10px 20px; background: #0ea5e9; color: #000; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 10px; margin-bottom: 10px; }
+        button:hover { background: #00d4ff; }
+        .output-box { background: #0a0e27; border: 1px solid #0ea5e9; border-radius: 4px; padding: 15px; margin-top: 10px; word-break: break-all; }
+        .row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .row button { flex: 1; min-width: 100px; }
+        .tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 1px solid #0ea5e9; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 20px; background: transparent; color: #7dd3fc; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab-btn.active { color: #00d4ff; border-bottom-color: #00d4ff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .info { color: #94a3b8; font-size: 0.9em; margin-top: 5px; }
+        .pipeline-result { background: #1a2f5a; padding: 10px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #0ea5e9; }
+        .relationship { background: #1a3a2f; padding: 10px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚙️ secp256k1 Crypto Transformation Suite</h1>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('input')">Input & Hash</button>
+            <button class="tab-btn" onclick="switchTab('bitwise')">Bitwise Ops</button>
+            <button class="tab-btn" onclick="switchTab('derivation')">Derivation</button>
+            <button class="tab-btn" onclick="switchTab('pipeline')">Pipeline</button>
+            <button class="tab-btn" onclick="switchTab('scanner')">Relationship Scanner</button>
+            <button class="tab-btn" onclick="switchTab('verify')">Verify</button>
+        </div>
+
+        <!-- INPUT & HASH -->
+        <div id="input" class="tab-content active">
+            <div class="section">
+                <h2>Input & Hashing</h2>
+                <label>Input (any format - text, hex, file)</label>
+                <textarea id="rawInput" placeholder="Paste hex, text, or anything..."></textarea>
+                <div class="row">
+                    <button onclick="hashInput('sha256')">SHA-256</button>
+                    <button onclick="hashInput('sha1')">SHA-1</button>
+                    <button onclick="hashInput('hash160')">HASH160 (SHA256+RIPEMD)</button>
+                    <button onclick="hashInput('md5')">MD5</button>
+                </div>
+                <div class="output-box" id="hashOutput"></div>
+            </div>
+        </div>
+
+        <!-- BITWISE OPS -->
+        <div id="bitwise" class="tab-content">
+            <div class="section">
+                <h2>Bitwise Operations</h2>
+                <div class="grid">
+                    <div>
+                        <label>Value A (hex)</label>
+                        <input type="text" id="valueA" placeholder="e.g., 7a5c5a6e" />
+                        <label>Value B (hex)</label>
+                        <input type="text" id="valueB" placeholder="e.g., d21b6953" />
+                    </div>
+                    <div>
+                        <div class="row">
+                            <button onclick="bitwiseOp('xor')">XOR</button>
+                            <button onclick="bitwiseOp('xnor')">XNOR</button>
+                            <button onclick="bitwiseOp('or')">OR</button>
+                            <button onclick="bitwiseOp('and')">AND</button>
+                            <button onclick="bitwiseOp('nand')">NAND</button>
+                        </div>
+                        <div class="row">
+                            <button onclick="bitwiseOp('not')">NOT A</button>
+                            <button onclick="bitwiseOp('reverse')">Reverse A</button>
+                            <button onclick="bitwiseOp('nibble')">Nibble Swap A</button>
+                        </div>
+                        <div class="row">
+                            <button onclick="bitwiseOp('rotate_left')">Rotate L</button>
+                            <button onclick="bitwiseOp('rotate_right')">Rotate R</button>
+                            <button onclick="bitwiseOp('bit_swap')">Bit Swap A</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="output-box" id="bitwiseOutput"></div>
+            </div>
+        </div>
+
+        <!-- DERIVATION -->
+        <div id="derivation" class="tab-content">
+            <div class="section">
+                <h2>Point & Scalar Derivation</h2>
+                <div class="grid">
+                    <div>
+                        <label>Scalar (private key, hex)</label>
+                        <input type="text" id="scalar" placeholder="e.g., 0x1234..." />
+                        <button onclick="derivePublicKey()">Derive Public Key (G * scalar)</button>
+                    </div>
+                    <div>
+                        <label>Point X (hex)</label>
+                        <input type="text" id="pointX" placeholder="Public key X coordinate" />
+                        <label>Point Y (hex)</label>
+                        <input type="text" id="pointY" placeholder="Public key Y coordinate" />
+                    </div>
+                </div>
+                <div class="row">
+                    <button onclick="pointOp('neg')">Negate Point</button>
+                    <button onclick="pointOp('double')">Double Point (2P)</button>
+                    <button onclick="pointOp('scalar_mul')">Scalar * Point</button>
+                </div>
+                <div class="output-box" id="derivationOutput"></div>
+            </div>
+        </div>
+
+        <!-- PIPELINE -->
+        <div id="pipeline" class="tab-content">
+            <div class="section">
+                <h2>Full Transformation Pipeline</h2>
+                <label>Input Value</label>
+                <textarea id="pipelineInput" placeholder="Enter any value..."></textarea>
+                <label>Number of Rounds</label>
+                <input type="number" id="rounds" value="5" min="1" max="20" />
+                <div class="row">
+                    <button onclick="runPipeline()">Run Pipeline</button>
+                    <button onclick="clearPipeline()">Clear</button>
+                </div>
+                <div id="pipelineOutput"></div>
+            </div>
+        </div>
+
+        <!-- RELATIONSHIP SCANNER -->
+        <div id="scanner" class="tab-content">
+            <div class="section">
+                <h2>Relationship Scanner</h2>
+                <label>Value 1 (hex)</label>
+                <input type="text" id="scanValue1" placeholder="e.g., 7a5c5a6e" />
+                <label>Value 2 (hex)</label>
+                <input type="text" id="scanValue2" placeholder="e.g., d21b6953" />
+                <button onclick="scanRelationships()">Scan Relationships</button>
+                <div id="scannerOutput"></div>
+            </div>
+        </div>
+
+        <!-- VERIFY -->
+        <div id="verify" class="tab-content">
+            <div class="section">
+                <h2>Verification & Checks</h2>
+                <label>Value to Verify (hex)</label>
+                <input type="text" id="verifyValue" placeholder="e.g., 7a5c5a6e" />
+                <div class="row">
+                    <button onclick="verify('prime')">Check if Prime</button>
+                    <button onclick="verify('even')">Check if Even</button>
+                    <button onclick="verify('curve')">Check on Curve</button>
+                    <button onclick="verify('invertible')">Check Invertible</button>
+                </div>
+                <div class="output-box" id="verifyOutput"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="crypto.js"></script>
+</body>
+</html>
